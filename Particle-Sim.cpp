@@ -131,32 +131,13 @@ int main()
 		// End the window
 		ImGui::End();
 
-		
-
-		// Pop the style color to restore the default settings
-		ImGui::PopStyleColor();
-
-		// Set the window background color to white for the user input space
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-		// Begin a new window for user input below the black panel
-		ImGui::SetNextWindowSize(ImVec2(1280, 100), ImGuiCond_Always); // Width of  1280 and height of  100
-		ImGui::SetNextWindowPos(ImVec2(0, 720), ImGuiCond_Always); // Positioned right below the black panel
-		ImGui::Begin("User Input Space", nullptr, ImGuiWindowFlags_NoDecoration);
-
-		// Add your buttons, text fields, etc., here
-		// Example: ImGui::Button("My Button");
-
-		// End the user input window
-		ImGui::End();
-
 		// Pop the style color to restore the default settings
 		ImGui::PopStyleColor();
 
 		// Create a new window for the button
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
-		ImGui::SetNextWindowSize(ImVec2(100, 720), ImGuiCond_Always); // Width of  100 and height of  720
-		ImGui::SetNextWindowPos(ImVec2(1280 - 100, 0), ImGuiCond_Always); // Positioned to the right of the black panel
+		ImGui::SetNextWindowSizeConstraints(ImVec2(500, 300), ImVec2(500, 300)); // Set size constraints
+		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always); // Positioned to the right of the black panel
 		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
 		// Check if the button was clicked
@@ -176,7 +157,6 @@ int main()
 			// Draw the particle here
 		}
 
-
 		ImGui::Render();
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -192,10 +172,6 @@ int main()
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-
-	if (window)
-	{
-		glfwDestroyWindow(window);
-	}
+	glfwDestroyWindow(window);
 	glfwTerminate();
 }

@@ -30,7 +30,7 @@ public:
 
 	void UpdatePosition(double deltaTime) {
 		// Convert angle to radians
-		double radians = -angle * M_PI / 180.0;
+		double radians = angle * M_PI / 180.0;
 
 		// Calculate the change in position
 		double dx = cos(radians) * velocity * deltaTime;
@@ -92,7 +92,7 @@ void DrawParticles() {
 
 	for (const auto& particle : particles) {
 		// Convert particle position to screen coordinates
-		ImVec2 pos = ImVec2(particle.x, particle.y);
+		ImVec2 pos = ImVec2(particle.x, 720 - particle.y);
 		// Draw a filled circle at the particle's position
 		draw_list->AddCircleFilled(pos, 2.0f, IM_COL32(255, 255, 255, 255)); // White color
 	}
@@ -117,6 +117,14 @@ int main()
 	ImGui_ImplOpenGL3_Init();
 
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	// Placeholders for input values for new individual particles
+	char newParticleXStr[16] = "";
+	char newParticleYStr[16] = "";
+	char newParticleAngleStr[16] = "";
+	char newParticleVelocityStr[16] = "";
+
+	bool showErrorPopup = false;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -145,14 +153,14 @@ int main()
 		// Pop the style color to restore the default settings
 		ImGui::PopStyleColor();
 
-		// Create a new window for the button
+		// Create a new window for the button and input fields
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
-		ImGui::SetNextWindowSizeConstraints(ImVec2(640, 300), ImVec2(640, 300)); // Set size constraints
+		ImGui::SetNextWindowSizeConstraints(ImVec2(640, 360), ImVec2(640, 360)); // Set size constraints
 		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always); // Positioned to the right of the black panel
 		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
 		// Check if the Spawn Particle button was clicked
-		if (ImGui::Button("Spawn Particle")) {
+		if (ImGui::Button("Spawn Random Particle")) {
 			SpawnRandomParticle();
 		}
 
@@ -160,6 +168,42 @@ int main()
 		ImGui::SameLine(); // Place the next item on the same line
 		if (ImGui::Button("Reset Particles")) {
 			particles.clear(); // Clear the particles vector
+		}
+
+		// Text fields for inputting the new particle's properties
+		ImGui::InputText("X Coordinate", newParticleXStr, sizeof(newParticleXStr));
+		ImGui::InputText("Y Coordinate", newParticleYStr, sizeof(newParticleYStr));
+		ImGui::InputText("Angle (degrees)", newParticleAngleStr, sizeof(newParticleAngleStr));
+		ImGui::InputText("Velocity (pixels/sec)", newParticleVelocityStr, sizeof(newParticleVelocityStr));
+
+		// Button to add the new particle to the canvas
+		if (ImGui::Button("Add Particle")) {
+			int newParticleX = atoi(newParticleXStr);
+			int newParticleY = atoi(newParticleYStr);
+			double newParticleAngle = atof(newParticleAngleStr);
+			double newParticleVelocity = atof(newParticleVelocityStr);
+
+			if (newParticleX >= 0 && newParticleX <= 1280 &&
+				newParticleY >= 0 && newParticleY <= 720 &&
+				newParticleAngle >= 0.0 && newParticleAngle <= 360.0) {
+				particles.emplace_back(newParticleX, newParticleY, newParticleAngle, newParticleVelocity);
+			}
+			else {
+				showErrorPopup = true; // Show error popup if conditions are not met
+			}
+		}
+
+		// Display error popup if necessary
+		if (showErrorPopup) {
+			ImGui::OpenPopup("Invalid Input");
+			if (ImGui::BeginPopupModal("Invalid Input", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+				ImGui::Text("The input values for X and Y coordinates must be within the dimensions of the black panel (0-1280,   0-720).\nThe angle must be between   0 and   360 degrees.");
+				if (ImGui::Button("OK")) {
+					ImGui::CloseCurrentPopup();
+					showErrorPopup = false;
+				}
+				ImGui::EndPopup();
+			}
 		}
 
 		// End the button window

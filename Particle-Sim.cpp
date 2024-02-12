@@ -151,9 +151,15 @@ int main()
 		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always); // Positioned to the right of the black panel
 		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
-		// Check if the button was clicked
+		// Check if the Spawn Particle button was clicked
 		if (ImGui::Button("Spawn Particle")) {
 			SpawnRandomParticle();
+		}
+
+		// Check if the "Reset Particles" button was clicked
+		ImGui::SameLine(); // Place the next item on the same line
+		if (ImGui::Button("Reset Particles")) {
+			particles.clear(); // Clear the particles vector
 		}
 
 		// End the button window

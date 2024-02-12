@@ -87,6 +87,17 @@ static void GLFWErrorCallback(int error, const char* description)
 	std::cout << "GLFW Error " <<  description << " code: " << error << std::endl;
 }
 
+void DrawParticles() {
+	ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+	for (const auto& particle : particles) {
+		// Convert particle position to screen coordinates
+		ImVec2 pos = ImVec2(particle.x, particle.y);
+		// Draw a filled circle at the particle's position
+		draw_list->AddCircleFilled(pos, 2.0f, IM_COL32(255, 255, 255, 255)); // White color
+	}
+}
+
 int main()
 {
 	if (!glfwInit())
@@ -102,7 +113,6 @@ int main()
 	glfwMakeContextCurrent(window);
 
 	ImGui::CreateContext();
-
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
@@ -110,7 +120,6 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
-		
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -125,8 +134,10 @@ int main()
 		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always); // Center the window
 		ImGui::Begin("Black Panel", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
+		// Get the draw list for the black panel
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-		// Draw content inside the black panel here
+		DrawParticles();
 
 		// End the window
 		ImGui::End();
@@ -153,8 +164,7 @@ int main()
 
 		// Update and draw particles
 		for (auto& particle : particles) {
-			particle.UpdatePosition(0.5); // You need to define deltaTime
-			// Draw the particle here
+			particle.UpdatePosition(0.1);
 		}
 
 		ImGui::Render();

@@ -147,7 +147,7 @@ int main()
 
 		// Create a new window for the button
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
-		ImGui::SetNextWindowSizeConstraints(ImVec2(500, 300), ImVec2(500, 300)); // Set size constraints
+		ImGui::SetNextWindowSizeConstraints(ImVec2(640, 300), ImVec2(640, 300)); // Set size constraints
 		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always); // Positioned to the right of the black panel
 		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 

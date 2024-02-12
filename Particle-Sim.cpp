@@ -8,6 +8,7 @@
 #include <string>
 #include <ctime>
 #include <cmath>
+#include <random>
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -17,6 +18,7 @@
 using namespace std;
 
 static GLFWwindow* window = nullptr;
+
 class Particle {
 public:
 	int x, y;
@@ -62,6 +64,24 @@ public:
 	}
 };
 
+std::vector<Particle> particles;
+
+void SpawnRandomParticle() {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<> disX(0, 1280);
+	std::uniform_real_distribution<> disY(0, 720);
+	std::uniform_real_distribution<> disAngle(-180, 180);
+	std::uniform_real_distribution<> disVelocity(10, 100);
+
+	int x = static_cast<int>(disX(gen));
+	int y = static_cast<int>(disY(gen));
+	double angle = disAngle(gen);
+	double velocity = disVelocity(gen);
+
+	particles.emplace_back(x, y, angle, velocity);
+}
+
 static void GLFWErrorCallback(int error, const char* description)
 {
 	std::cout << "GLFW Error " <<  description << " code: " << error << std::endl;
@@ -105,13 +125,56 @@ int main()
 		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always); // Center the window
 		ImGui::Begin("Black Panel", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
+
 		// Draw content inside the black panel here
 
 		// End the window
 		ImGui::End();
 
+		
+
 		// Pop the style color to restore the default settings
 		ImGui::PopStyleColor();
+
+		// Set the window background color to white for the user input space
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+		// Begin a new window for user input below the black panel
+		ImGui::SetNextWindowSize(ImVec2(1280, 100), ImGuiCond_Always); // Width of  1280 and height of  100
+		ImGui::SetNextWindowPos(ImVec2(0, 720), ImGuiCond_Always); // Positioned right below the black panel
+		ImGui::Begin("User Input Space", nullptr, ImGuiWindowFlags_NoDecoration);
+
+		// Add your buttons, text fields, etc., here
+		// Example: ImGui::Button("My Button");
+
+		// End the user input window
+		ImGui::End();
+
+		// Pop the style color to restore the default settings
+		ImGui::PopStyleColor();
+
+		// Create a new window for the button
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
+		ImGui::SetNextWindowSize(ImVec2(100, 720), ImGuiCond_Always); // Width of  100 and height of  720
+		ImGui::SetNextWindowPos(ImVec2(1280 - 100, 0), ImGuiCond_Always); // Positioned to the right of the black panel
+		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+
+		// Check if the button was clicked
+		if (ImGui::Button("Spawn Particle")) {
+			SpawnRandomParticle();
+		}
+
+		// End the button window
+		ImGui::End();
+
+		// Pop the style var to restore the default settings
+		ImGui::PopStyleVar();
+
+		// Update and draw particles
+		for (auto& particle : particles) {
+			particle.UpdatePosition(0.5); // You need to define deltaTime
+			// Draw the particle here
+		}
 
 
 		ImGui::Render();

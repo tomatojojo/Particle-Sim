@@ -33,8 +33,8 @@ public:
 		double radians = angle * PI / 180.0;
 
 		// Calculate the change in position
-		float dx = cos(radians) * velocity * deltaTime;
-		float dy = sin(radians) * velocity * deltaTime;
+		float dx = cos(radians) * velocity;
+		float dy = sin(radians) * velocity;
 
 		// Update position
 		x += static_cast<int>(dx);
@@ -72,7 +72,7 @@ void SpawnRandomParticle() {
 	std::uniform_real_distribution<> disX(0, 1280);
 	std::uniform_real_distribution<> disY(0, 720);
 	std::uniform_real_distribution<> disAngle(-180, 180);
-	std::uniform_real_distribution<> disVelocity(100, 500);
+	std::uniform_real_distribution<> disVelocity(10, 100);
 
 	int x = static_cast<int>(disX(gen));
 	int y = static_cast<int>(disY(gen));

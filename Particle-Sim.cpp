@@ -222,10 +222,12 @@ int main()
 		ImGui::PopStyleVar();
 
 		// Only update particles if enough time has passed
+
+		for (auto& particle : particles) {
+			particle.UpdatePosition(0.05);
+		}
+
 		if (frameTime >= targetFrameTime) {
-			for (auto& particle : particles) {
-				particle.UpdatePosition(0.1);
-			}
 			lastUpdateTime = currentTime;
 		}
 

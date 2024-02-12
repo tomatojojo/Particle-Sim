@@ -1,5 +1,3 @@
-#define _USE_MATH_DEFINES
-
 #include <iostream>
 #include <stdlib.h>
 #include <thread>
@@ -19,6 +17,8 @@ using namespace std;
 
 static GLFWwindow* window = nullptr;
 
+float PI = 3.14159265358979323846;
+
 class Particle {
 public:
 	int x, y;
@@ -30,11 +30,11 @@ public:
 
 	void UpdatePosition(double deltaTime) {
 		// Convert angle to radians
-		double radians = angle * M_PI / 180.0;
+		double radians = angle * PI / 180.0;
 
 		// Calculate the change in position
-		double dx = cos(radians) * velocity * deltaTime;
-		double dy = sin(radians) * velocity * deltaTime;
+		float dx = cos(radians) * velocity;
+		float dy = sin(radians) * velocity;
 
 		// Update position
 		x += static_cast<int>(dx);
@@ -94,7 +94,7 @@ void DrawParticles() {
 		// Convert particle position to screen coordinates
 		ImVec2 pos = ImVec2(particle.x, 720 - particle.y);
 		// Draw a filled circle at the particle's position
-		draw_list->AddCircleFilled(pos, 2.0f, IM_COL32(255, 255, 255, 255)); // White color
+		draw_list->AddCircleFilled(pos, 3.0f, IM_COL32(255, 255, 255, 255)); // White color
 	}
 }
 
@@ -126,8 +126,25 @@ int main()
 
 	bool showErrorPopup = false;
 
+	const double targetFPS = 60.0;
+	const std::chrono::duration<double> targetFrameDuration = std::chrono::duration<double>(1.0 / targetFPS);
+
+	std::chrono::steady_clock::time_point prevTime = std::chrono::steady_clock::now();
+
 	while (!glfwWindowShouldClose(window))
 	{
+		std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
+		std::chrono::duration<double> elapsedTime = currentTime - prevTime;
+		prevTime = currentTime;
+
+		// Cap the elapsed time to avoid large time steps
+		if (elapsedTime > std::chrono::seconds(1)) {
+			elapsedTime = std::chrono::duration<double>(1.0 / targetFPS);
+		}
+
+		// Convert elapsed time to seconds
+		double deltaTime = elapsedTime.count();
+
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -214,7 +231,7 @@ int main()
 
 		// Update and draw particles
 		for (auto& particle : particles) {
-			particle.UpdatePosition(0.1);
+			particle.UpdatePosition(deltaTime);
 		}
 
 		ImGui::Render();
@@ -227,6 +244,11 @@ int main()
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
+
+		std::chrono::duration<double> sleepTime = targetFrameDuration - (std::chrono::steady_clock::now() - currentTime);
+		if (sleepTime > std::chrono::duration<double>(0)) {
+			std::this_thread::sleep_for(sleepTime);
+		}
 	}
 
 	ImGui_ImplOpenGL3_Shutdown();
@@ -234,4 +256,6 @@ int main()
 	ImGui::DestroyContext();
 	glfwDestroyWindow(window);
 	glfwTerminate();
+
+	return 0;
 }

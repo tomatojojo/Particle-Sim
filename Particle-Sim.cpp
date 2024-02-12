@@ -126,8 +126,17 @@ int main()
 
 	bool showErrorPopup = false;
 
+	double frameTime = 0.0; // Time since the last frame
+	double targetFrameTime = 1.0 / 60.0; // Target time per frame (60 FPS)
+	double updateInterval = 0.5; // Interval for updating particles (0.5 seconds)
+	double lastUpdateTime = 0.0; // Last time particles were updated
+	double lastFPSUpdateTime = 0.0; // Last time the framerate was updated
+
 	while (!glfwWindowShouldClose(window))
 	{
+		// Measure the time at the start of the loop
+		double currentTime = glfwGetTime();
+		frameTime = currentTime - lastUpdateTime;
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -212,9 +221,19 @@ int main()
 		// Pop the style var to restore the default settings
 		ImGui::PopStyleVar();
 
-		// Update and draw particles
-		for (auto& particle : particles) {
-			particle.UpdatePosition(0.1);
+		// Only update particles if enough time has passed
+		if (frameTime >= targetFrameTime) {
+			for (auto& particle : particles) {
+				particle.UpdatePosition(0.1);
+			}
+			lastUpdateTime = currentTime;
+		}
+
+		// Output the current framerate to the console
+		if (currentTime - lastFPSUpdateTime >= updateInterval) {
+			double fps = 1.0 / frameTime;
+			std::cout << "Framerate: " << fps << " FPS" << std::endl;
+			lastFPSUpdateTime = currentTime;
 		}
 
 		ImGui::Render();
@@ -227,6 +246,7 @@ int main()
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
+		glfwSwapInterval(0);
 	}
 
 	ImGui_ImplOpenGL3_Shutdown();

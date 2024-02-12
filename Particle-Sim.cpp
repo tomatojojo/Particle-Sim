@@ -90,15 +90,29 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
+		
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::Begin("Hello, world!");
-		ImGui::Text("Text");
+		// Set the window background color to black
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+		// Begin the black panel with no title bar and no resize option
+		ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always); // Center the window
+		ImGui::Begin("Black Panel", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+
+		// Draw content inside the black panel here
+
+		// End the window
 		ImGui::End();
+
+		// Pop the style color to restore the default settings
+		ImGui::PopStyleColor();
+
 
 		ImGui::Render();
 		int display_w, display_h;

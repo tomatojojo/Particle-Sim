@@ -20,11 +20,11 @@ float PI = 3.14159265359;
 
 class Particle {
 public:
-	int x, y;
-	double angle; // Angle in degrees
-	double velocity; // Velocity in pixels per second
+	float x, y;
+	float angle; // Angle in degrees
+	float velocity; // Velocity in pixels per second
 
-	Particle(int x, int y, double angle, double velocity)
+	Particle(float x, float y, float angle, float velocity)
 		: x(x), y(y), angle(angle), velocity(velocity) {}
 
 	void UpdatePosition(double deltaTime) {
@@ -36,8 +36,8 @@ public:
 		double dy = sin(radians) * velocity * deltaTime;
 
 		// Update position
-		x += static_cast<int>(dx);
-		y += static_cast<int>(dy);
+		x += dx;
+		y += dy;
 
 		y = 720 - y; // Invert y-axis
 
@@ -70,13 +70,13 @@ void SpawnRandomParticle() {
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> disX(0, 1280);
 	std::uniform_real_distribution<> disY(0, 720);
-	std::uniform_real_distribution<> disAngle(-180, 180);
-	std::uniform_real_distribution<> disVelocity(60, 500);
+	std::uniform_real_distribution<> disAngle(0, 360);
+	std::uniform_real_distribution<> disVelocity(70, 500);
 
-	int x = static_cast<int>(disX(gen));
-	int y = static_cast<int>(disY(gen));
-	double angle = disAngle(gen);
-	double velocity = disVelocity(gen);
+	float x = disX(gen);
+	float y = disY(gen);
+	float angle = disAngle(gen);
+	float velocity = disVelocity(gen);
 
 	particles.emplace_back(x, y, angle, velocity);
 }
@@ -210,10 +210,10 @@ int main(int argc, char *argv) {
 
 		// Button to add the new particle to the canvas
 		if (ImGui::Button("Add Particle")) {
-			int newParticleX = atoi(newParticleXStr);
-			int newParticleY = atoi(newParticleYStr);
-			double newParticleAngle = atof(newParticleAngleStr);
-			double newParticleVelocity = atof(newParticleVelocityStr);
+			float newParticleX = atof(newParticleXStr);
+			float newParticleY = atof(newParticleYStr);
+			float newParticleAngle = atof(newParticleAngleStr);
+			float newParticleVelocity = atof(newParticleVelocityStr);
 
 			//std::cout << "New particle velocity: " << newParticleVelocity << std::endl; // Debug output
 

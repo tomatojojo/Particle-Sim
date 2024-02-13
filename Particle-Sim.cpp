@@ -29,7 +29,7 @@ public:
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 		ImVec2 start = ImVec2(startX, 720 - startY);
 		ImVec2 end = ImVec2(endX, 720 - endY);
-		draw_list->AddLine(start, end, IM_COL32(255, 255, 255, 255), 1.0f);
+		draw_list->AddLine(start, end, IM_COL32(255, 255, 0, 255), 1.0f);
 	}
 
 };

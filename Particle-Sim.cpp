@@ -27,13 +27,13 @@ public:
 	Particle(float x, float y, float angle, float velocity)
 		: x(x), y(y), angle(angle), velocity(velocity) {}
 
-	void UpdatePosition(double deltaTime) {
+	void UpdatePosition(float deltaTime) {
 		// Convert angle to radians
-		double radians = angle * PI / 180.0;
+		float radians = angle * PI / 180.0;
 
 		// Calculate the change in position
-		double dx = cos(radians) * velocity * deltaTime;
-		double dy = sin(radians) * velocity * deltaTime;
+		float dx = cos(radians) * velocity * deltaTime;
+		float dy = sin(radians) * velocity * deltaTime;
 
 		// Update position
 		x += dx;
@@ -109,6 +109,14 @@ int main(int argc, char *argv) {
 	glfwSetErrorCallback(GLFWErrorCallback);
 
 	window = glfwCreateWindow(1280, 720, "Particle Sim", NULL, NULL);
+	if (!window) {
+		std::cerr << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
+
+	// Maximize the window
+	glfwMaximizeWindow(window);
 
 	glfwMakeContextCurrent(window);
 
@@ -125,6 +133,15 @@ int main(int argc, char *argv) {
 	char newParticleVelocityStr[16] = "";
 
 	bool showErrorPopup = false;
+
+	// Batch particle variables
+	char numParticlesStr[16] = "";
+	int numParticles = 0;
+	int particleVariationType = 0; //  0: Varying X and Y,  1: Varying Angle,  2: Varying Velocity
+	float startX = 0.0f, endX = 0.0f;
+	float startY = 0.0f, endY = 0.0f;
+	float startAngle = 0.0f, endAngle = 0.0f;
+	float startVelocity = 0.0f, endVelocity = 0.0f;
 
 	double frameTime = 0.0; // Time since the last frame
 	double targetFrameTime = 1.0 / 60.0; // Target time per frame (60 FPS)
@@ -187,7 +204,7 @@ int main(int argc, char *argv) {
 
 		// Create a new window for the button and input fields
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
-		ImGui::SetNextWindowSizeConstraints(ImVec2(640, 180), ImVec2(640, 180)); // Set size constraints
+		ImGui::SetNextWindowSizeConstraints(ImVec2(640, 720), ImVec2(640, 720)); // Set size constraints
 		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always); // Positioned to the right of the black panel
 		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
@@ -239,9 +256,65 @@ int main(int argc, char *argv) {
 				ImGui::EndPopup();
 			}
 		}
-
+		
 		// Display the current framerate in the UI
 		ImGui::Text("Current FPS: %.f", currentFramerate); // Render the framerate value
+
+		// Display the current number of particles
+		ImGui::Text("Number of Particles: %d", particles.size());
+
+		// Batch Particle UI elements
+		
+		// Text field for the number of particles
+		ImGui::InputText("Number of Particles", numParticlesStr, sizeof(numParticlesStr));
+		numParticles = atoi(numParticlesStr);
+
+		// Dropdown menu for particle variation type
+		const char* particleVariationTypes[] = { "Varying X and Y", "Varying Angle", "Varying Velocity" };
+		ImGui::Combo("Particle Variation Type", &particleVariationType, particleVariationTypes, IM_ARRAYSIZE(particleVariationTypes));
+		// Rows of text input fields for start and end values
+		ImGui::InputFloat("Start X", &startX);
+		ImGui::InputFloat("Start Y", &startY);
+		ImGui::InputFloat("End X", &endX);
+		ImGui::InputFloat("End Y", &endY);
+		ImGui::InputFloat("Start Angle", &startAngle);
+		ImGui::InputFloat("End Angle", &endAngle);
+		ImGui::InputFloat("Start Velocity", &startVelocity);
+		ImGui::InputFloat("End Velocity", &endVelocity);
+
+		// Button to add the batch of particles
+		if (ImGui::Button("Add Batch Particles")) {
+			// Calculate the increments for each property
+			float dX = (endX - startX) / (numParticles - 1);
+			float dY = (endY - startY) / (numParticles - 1);
+			float dAngle = (endAngle - startAngle) / (numParticles - 1);
+			float dVelocity = (endVelocity - startVelocity) / (numParticles - 1);
+
+			// Generate the batch of particles based on the input values
+			for (int i = 0; i < numParticles; ++i) {
+				float x = startX + i * dX;
+				float y = startY + i * dY;
+				float angle = startAngle + i * dAngle;
+				float velocity = startVelocity + i * dVelocity;
+
+				// Adjust the values based on the selected variation type
+				switch (particleVariationType) {
+					case 0: // Varying X and Y
+						particles.emplace_back(x, 720 - y, startAngle, startVelocity);
+						break;
+					case 1: // Varying Angle
+						angle = fmod(angle, 360.0f);
+						particles.emplace_back(startX, 720 - startY, angle, startVelocity);
+						break;
+					case 2: // Varying Velocity
+						// No additional adjustment needed for velocity
+						particles.emplace_back(startX, 720 - startY, startAngle, velocity);
+						break;
+				}
+				std::cout << "Particle position: (" << x << ", " << y << ")" << std::endl;
+				
+			}
+		}
 
 		// End the button window
 		ImGui::End();

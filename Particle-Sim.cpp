@@ -18,6 +18,28 @@ using namespace std;
 static GLFWwindow* window = nullptr;
 float PI = 3.14159265359;
 
+class Wall {
+public:
+	float startX, startY, endX, endY;
+
+	Wall(float startX, float startY, float endX, float endY)
+		: startX(startX), startY(startY), endX(endX), endY(endY) {}
+
+	void DrawWall() {
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		ImVec2 start = ImVec2(startX, 720 - startY);
+		ImVec2 end = ImVec2(endX, 720 - endY);
+		draw_list->AddLine(start, end, IM_COL32(255, 255, 255, 255), 1.0f);
+	}
+
+};
+
+std::vector<Wall> walls;
+
+float getDistance(float x1, float y1, float x2, float y2) {
+	return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+}
+
 class Particle {
 public:
 	float x, y;
@@ -59,6 +81,13 @@ public:
 			y = 720;
 			angle = -angle;
 		}
+		// Check if the particle collides with any wall, and reflect the angle accordingly
+		for (auto& wall : walls) {
+			if (getDistance(wall.startX, wall.startY, x, y) + getDistance(x, y, wall.endX, wall.endY) == getDistance(wall.startX, wall.startY, wall.endX, wall.endY)) {
+				// Reflect the angle
+				angle = 180 - angle;
+			}
+		}
 		y = 720 - y; // Invert y-axis
 	}
 };
@@ -85,7 +114,7 @@ static void GLFWErrorCallback(int error, const char* description) {
 	std::cout << "GLFW Error " <<  description << " code: " << error << std::endl;
 }
 
-void DrawParticles() {
+void DrawElements() {
 	ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 	for (const auto& particle : particles) {
@@ -96,6 +125,10 @@ void DrawParticles() {
 		draw_list->AddCircleFilled(pos, 1.5f, IM_COL32(255, 255, 255, 255)); // White color
 
 		//std::cout << "Particle position: (" << particle.x << ", " << particle.y << ")" << std::endl;
+	}
+
+	for (auto& wall : walls) {
+		wall.DrawWall();
 	}
 }
 
@@ -142,6 +175,10 @@ int main(int argc, char *argv) {
 	float startY = 0.0f, endY = 0.0f;
 	float startAngle = 0.0f, endAngle = 0.0f;
 	float startVelocity = 0.0f, endVelocity = 0.0f;
+
+	// Wall variables
+	float wallStartX = 0.0f, wallStartY = 0.0f;
+	float wallEndX = 0.0f, wallEndY = 0.0f;
 
 	double frameTime = 0.0; // Time since the last frame
 	double targetFrameTime = 1.0 / 60.0; // Target time per frame (60 FPS)
@@ -194,7 +231,7 @@ int main(int argc, char *argv) {
 		// Get the draw list for the black panel
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-		DrawParticles();
+		DrawElements();
 
 		// End the window
 		ImGui::End();
@@ -213,10 +250,14 @@ int main(int argc, char *argv) {
 			SpawnRandomParticle();
 		}
 
-		// Check if the "Reset Particles" button was clicked
 		ImGui::SameLine(); // Place the next item on the same line
 		if (ImGui::Button("Reset Particles")) {
 			particles.clear(); // Clear the particles vector
+		}
+
+		ImGui::SameLine();
+		if (ImGui::Button("Clear Walls")) {
+			walls.clear();
 		}
 
 		// Text fields for inputting the new particle's properties
@@ -314,6 +355,18 @@ int main(int argc, char *argv) {
 				std::cout << "Particle position: (" << x << ", " << y << ")" << std::endl;
 				
 			}
+		}
+
+		// Text fields for wall start and end coordinates
+		ImGui::InputFloat("Wall Start X", &wallStartX);
+		ImGui::InputFloat("Wall Start Y", &wallStartY);
+		ImGui::InputFloat("Wall End X", &wallEndX);
+		ImGui::InputFloat("Wall End Y", &wallEndY);
+
+		// Button to add the wall
+		if (ImGui::Button("Add Wall")) {
+			// Create wall objects and add them to the walls vector
+			walls.emplace_back(wallStartX, wallStartY, wallEndX, wallEndY);
 		}
 
 		// End the button window

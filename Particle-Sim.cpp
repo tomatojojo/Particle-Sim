@@ -1,5 +1,3 @@
-#define _USE_MATH_DEFINES
-
 #include <iostream>
 #include <stdlib.h>
 #include <thread>
@@ -18,6 +16,7 @@
 using namespace std;
 
 static GLFWwindow* window = nullptr;
+float PI = 3.14159265359;
 
 class Particle {
 public:
@@ -30,7 +29,7 @@ public:
 
 	void UpdatePosition(double deltaTime) {
 		// Convert angle to radians
-		double radians = angle * M_PI / 180.0;
+		double radians = angle * PI / 180.0;
 
 		// Calculate the change in position
 		double dx = cos(radians) * velocity * deltaTime;
@@ -72,7 +71,7 @@ void SpawnRandomParticle() {
 	std::uniform_real_distribution<> disX(0, 1280);
 	std::uniform_real_distribution<> disY(0, 720);
 	std::uniform_real_distribution<> disAngle(-180, 180);
-	std::uniform_real_distribution<> disVelocity(10, 100);
+	std::uniform_real_distribution<> disVelocity(60, 500);
 
 	int x = static_cast<int>(disX(gen));
 	int y = static_cast<int>(disY(gen));
@@ -93,8 +92,11 @@ void DrawParticles() {
 	for (const auto& particle : particles) {
 		// Convert particle position to screen coordinates
 		ImVec2 pos = ImVec2(particle.x, 720 - particle.y);
+
 		// Draw a filled circle at the particle's position
-		draw_list->AddCircleFilled(pos, 2.0f, IM_COL32(255, 255, 255, 255)); // White color
+		draw_list->AddCircleFilled(pos, 3.0f, IM_COL32(255, 255, 255, 255)); // White color
+
+		//std::cout << "Particle position: (" << particle.x << ", " << particle.y << ")" << std::endl;
 	}
 }
 
@@ -132,11 +134,32 @@ int main()
 	double lastUpdateTime = 0.0; // Last time particles were updated
 	double lastFPSUpdateTime = 0.0; // Last time the framerate was updated
 
+	const double targetFPS = 60.0;
+	const std::chrono::duration<double> targetFrameDuration = std::chrono::duration<double>(1.0 / targetFPS);
+
+	std::chrono::steady_clock::time_point prevTime = std::chrono::steady_clock::now();
+
+	const double timeStep = 1.0 / targetFPS; // Time step for updates
+	double accumulator = 0.0; // Accumulates elapsed time
+
 	while (!glfwWindowShouldClose(window))
 	{
 		// Measure the time at the start of the loop
 		double currentTime = glfwGetTime();
 		frameTime = currentTime - lastUpdateTime;
+
+		std::chrono::steady_clock::time_point currentTimeForDelta = std::chrono::steady_clock::now();
+		std::chrono::duration<double> elapsedTime = currentTimeForDelta - prevTime;
+		prevTime = currentTimeForDelta;
+
+		accumulator += frameTime;
+
+		if (elapsedTime > std::chrono::seconds(1)) {
+			elapsedTime = std::chrono::duration<double>(1.0 / targetFPS);
+		}
+
+		double deltaTime = elapsedTime.count();
+
 		glfwPollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -192,6 +215,8 @@ int main()
 			double newParticleAngle = atof(newParticleAngleStr);
 			double newParticleVelocity = atof(newParticleVelocityStr);
 
+			std::cout << "New particle velocity: " << newParticleVelocity << std::endl; // Debug output
+
 			if (newParticleX >= 0 && newParticleX <= 1280 &&
 				newParticleY >= 0 && newParticleY <= 720 &&
 				newParticleAngle >= 0.0 && newParticleAngle <= 360.0) {
@@ -222,9 +247,12 @@ int main()
 		ImGui::PopStyleVar();
 
 		// Only update particles if enough time has passed
-
-		for (auto& particle : particles) {
-			particle.UpdatePosition(0.05);
+		while (accumulator >= timeStep) {
+			// std::cout << "Updating particles..." << std::endl; // Debug output
+			for (auto& particle : particles) {
+				particle.UpdatePosition(timeStep);
+			}
+			accumulator -= timeStep;
 		}
 
 		if (frameTime >= targetFrameTime) {
@@ -256,4 +284,6 @@ int main()
 	ImGui::DestroyContext();
 	glfwDestroyWindow(window);
 	glfwTerminate();
+
+	return 0;
 }

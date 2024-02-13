@@ -140,6 +140,9 @@ int main(int argc, char *argv) {
 	const double timeStep = 1.0 / targetFPS; // Time step for updates
 	double accumulator = 0.0; // Accumulates elapsed time
 
+	double currentFramerate = 0.0;
+	double lastUIUpdateTime = 0.0;
+
 	while (!glfwWindowShouldClose(window)) {
 		// Measure the time at the start of the loop
 		double currentTime = glfwGetTime();
@@ -212,7 +215,7 @@ int main(int argc, char *argv) {
 			double newParticleAngle = atof(newParticleAngleStr);
 			double newParticleVelocity = atof(newParticleVelocityStr);
 
-			std::cout << "New particle velocity: " << newParticleVelocity << std::endl; // Debug output
+			//std::cout << "New particle velocity: " << newParticleVelocity << std::endl; // Debug output
 
 			if (newParticleX >= 0 && newParticleX <= 1280 &&
 				newParticleY >= 0 && newParticleY <= 720 &&
@@ -237,6 +240,9 @@ int main(int argc, char *argv) {
 			}
 		}
 
+		// Display the current framerate in the UI
+		ImGui::Text("Current FPS: %.f", currentFramerate); // Render the framerate value
+
 		// End the button window
 		ImGui::End();
 
@@ -258,8 +264,8 @@ int main(int argc, char *argv) {
 
 		// Output the current framerate to the console
 		if (currentTime - lastFPSUpdateTime >= updateInterval) {
-			double fps = 1.0 / frameTime;
-			std::cout << "Framerate: " << fps << " FPS" << std::endl;
+			currentFramerate = 1.0 / frameTime;
+			std::cout << "Framerate: " << currentFramerate << " FPS" << std::endl;
 			lastFPSUpdateTime = currentTime;
 		}
 

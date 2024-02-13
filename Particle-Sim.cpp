@@ -40,6 +40,30 @@ float getDistance(float x1, float y1, float x2, float y2) {
 	return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
+// Function to calculate the distance from a point to a line segment
+float pointLineDistance(float px, float py, float x1, float y1, float x2, float y2) {
+	float dx = x2 - x1;
+	float dy = y2 - y1;
+	float t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy);
+
+	float closestX = x1 + t * dx;
+	float closestY = y1 + t * dy;
+
+	return sqrt((closestX - px) * (closestX - px) + (closestY - py) * (closestY - py));
+}
+
+float reflectAngle(Wall wall, float angle) {
+	// Wall angle
+	float wallAngle = atan2(wall.endY - wall.startY, wall.endX - wall.startX) * 180.0 / PI;
+
+	// Reflect the particle's angle based on the wall's angle
+	float reflectedAngle = 2 * wallAngle - angle;
+
+	reflectedAngle = fmod(reflectedAngle, 360.0f);
+
+	return reflectedAngle;
+}
+
 class Particle {
 public:
 	float x, y;
@@ -83,9 +107,15 @@ public:
 		}
 		// Check if the particle collides with any wall, and reflect the angle accordingly
 		for (auto& wall : walls) {
-			if (getDistance(wall.startX, wall.startY, x, y) + getDistance(x, y, wall.endX, wall.endY) == getDistance(wall.startX, wall.startY, wall.endX, wall.endY)) {
-				// Reflect the angle
-				angle = 180 - angle;
+			// Calculate the distance from the particle to the wall
+			float distance = pointLineDistance(x, y, wall.startX, wall.startY, wall.endX, wall.endY);
+
+			// If the distance is less than a threshold, consider the particle to have collided with the wall
+			float threshold = 1.0f; // Adjust this value based on the size of your particles
+			if (distance < threshold) {
+				// Reflect the particle's angle based on the orientation of the wall
+				std::cout << "Collision!" << std::endl;
+				angle = reflectAngle(wall, angle);
 			}
 		}
 		y = 720 - y; // Invert y-axis
@@ -123,8 +153,6 @@ void DrawElements() {
 
 		// Draw a filled circle at the particle's position
 		draw_list->AddCircleFilled(pos, 1.5f, IM_COL32(255, 255, 255, 255)); // White color
-
-		//std::cout << "Particle position: (" << particle.x << ", " << particle.y << ")" << std::endl;
 	}
 
 	for (auto& wall : walls) {

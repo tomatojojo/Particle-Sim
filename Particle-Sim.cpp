@@ -81,8 +81,7 @@ void SpawnRandomParticle() {
 	particles.emplace_back(x, y, angle, velocity);
 }
 
-static void GLFWErrorCallback(int error, const char* description)
-{
+static void GLFWErrorCallback(int error, const char* description) {
 	std::cout << "GLFW Error " <<  description << " code: " << error << std::endl;
 }
 
@@ -100,10 +99,9 @@ void DrawParticles() {
 	}
 }
 
-int main()
-{
-	if (!glfwInit())
-	{
+int main(int argc, char *argv) {
+
+	if (!glfwInit()) {
 		std::cout << "Failed to initialize GLFW" << std::endl;
 		std::cin.get();
 	}
@@ -142,8 +140,7 @@ int main()
 	const double timeStep = 1.0 / targetFPS; // Time step for updates
 	double accumulator = 0.0; // Accumulates elapsed time
 
-	while (!glfwWindowShouldClose(window))
-	{
+	while (!glfwWindowShouldClose(window)) {
 		// Measure the time at the start of the loop
 		double currentTime = glfwGetTime();
 		frameTime = currentTime - lastUpdateTime;
@@ -276,13 +273,16 @@ int main()
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
-		glfwSwapInterval(0);
+		glfwSwapInterval(0); // Disable VSync
 	}
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-	glfwDestroyWindow(window);
+
+	if (window) {
+		glfwDestroyWindow(window);
+	}
 	glfwTerminate();
 
 	return 0;

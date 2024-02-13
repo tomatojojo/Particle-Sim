@@ -85,13 +85,17 @@ public:
 		float newX = x + dx;
 		float newY = y + dy;
 
+		float threshold = 3.0f; // Adjust this value based on the size of your particles
+
 		// Check if the new position collides with any wall
 		bool collisionDetected = false;
 		Wall* collidedWall = nullptr;
 		for (auto& wall : walls) {
-			float distance = pointLineDistance(newX, newY, wall.startX, wall.startY, wall.endX, wall.endY);
-			float threshold = 3.0f; // Adjust this value based on the size of your particles
-			if (distance < threshold) {
+			float lineDistance = pointLineDistance(newX, newY, wall.startX, wall.startY, wall.endX, wall.endY);
+			float wallStartDistance = getDistance(newX, newY, wall.startX, wall.startY);
+			float wallEndDistance = getDistance(newX, newY, wall.endX, wall.endY);
+			
+			if (lineDistance < threshold || wallStartDistance < threshold || wallEndDistance < threshold) {
 				// Ensure the particle is actually touching the wall before reflecting
 				float dx = newX - wall.startX;
 				float dy = newY - wall.startY;
@@ -105,11 +109,19 @@ public:
 				}
 
 			}
+		
 		}
 
 		// If a collision is detected, reflect the particle and update its position
-		if (collisionDetected) {
-			angle = reflectAngle(*collidedWall, angle);
+		if (collisionDetected) {	
+			if (getDistance(newX, newY, collidedWall->startX, collidedWall->startY) < threshold || 
+				getDistance(newX, newY, collidedWall->endX, collidedWall->endY) < threshold) {
+				std::cout << "hIT THE TIP" << std::endl;
+				angle = fmod(angle + 180, 360.0f);
+			}
+			else {
+				angle = reflectAngle(*collidedWall, angle);
+			}
 			// Recalculate the change in position based on the new angle
 			radians = angle * PI / 180.0;
 			dx = cos(radians) * velocity * deltaTime;
@@ -140,6 +152,7 @@ public:
 			y = 720;
 			angle = -angle;
 		}
+
 	}
 };
 
@@ -159,6 +172,23 @@ void SpawnRandomParticle() {
 	float velocity = disVelocity(gen);
 
 	particles.emplace_back(x, y, angle, velocity);
+}
+
+void SpawnRandomWall() {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<> disStartX(0, 1280);
+	std::uniform_real_distribution<> disStartY(0, 720);
+	std::uniform_real_distribution<> disEndX(0, 1280);
+	std::uniform_real_distribution<> disEndY(0, 720);
+	
+
+	float startX = disStartX(gen);
+	float startY = disStartY(gen);
+	float endX = disEndX(gen);
+	float endY = disEndY(gen);
+
+	walls.emplace_back(startX, startY, endX, endY);	
 }
 
 static void GLFWErrorCallback(int error, const char* description) {
@@ -299,6 +329,11 @@ int main(int argc, char *argv) {
 			SpawnRandomParticle();
 		}
 
+		ImGui::SameLine(); // 
+		if (ImGui::Button("Spawn Random Wall")) {
+			SpawnRandomWall();
+		}
+
 		ImGui::SameLine(); // Place the next item on the same line
 		if (ImGui::Button("Reset Particles")) {
 			particles.clear(); // Clear the particles vector
@@ -390,15 +425,15 @@ int main(int argc, char *argv) {
 				// Adjust the values based on the selected variation type
 				switch (particleVariationType) {
 					case 0: // Varying X and Y
-						particles.emplace_back(x, 720 - y, startAngle, startVelocity);
+						particles.emplace_back(x, y, startAngle, startVelocity);
 						break;
 					case 1: // Varying Angle
 						angle = fmod(angle, 360.0f);
-						particles.emplace_back(startX, 720 - startY, angle, startVelocity);
+						particles.emplace_back(startX, startY, angle, startVelocity);
 						break;
 					case 2: // Varying Velocity
 						// No additional adjustment needed for velocity
-						particles.emplace_back(startX, 720 - startY, startAngle, velocity);
+						particles.emplace_back(startX, startY, startAngle, velocity);
 						break;
 				}
 				std::cout << "Particle position: (" << x << ", " << y << ")" << std::endl;

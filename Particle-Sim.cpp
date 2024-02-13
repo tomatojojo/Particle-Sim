@@ -36,27 +36,23 @@ public:
 
 std::vector<Wall> walls;
 
-float getDistance(float x1, float y1, float x2, float y2) {
+static float getDistance(float x1, float y1, float x2, float y2) {
 	return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
 // Function to calculate the distance from a point to a line segment
-float pointLineDistance(float px, float py, float x1, float y1, float x2, float y2) {
+static float pointLineDistance(float px, float py, float x1, float y1, float x2, float y2) {
 	float dx = x2 - x1;
 	float dy = y2 - y1;
 	float t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy);
-
 	float closestX = x1 + t * dx;
 	float closestY = y1 + t * dy;
 
 	return sqrt((closestX - px) * (closestX - px) + (closestY - py) * (closestY - py));
 }
 
-float reflectAngle(Wall wall, float angle) {
-	// Wall angle
+static float reflectAngle(Wall wall, float angle) {
 	float wallAngle = atan2(wall.endY - wall.startY, wall.endX - wall.startX) * 180.0 / PI;
-
-	// Reflect the particle's angle based on the wall's angle
 	float reflectedAngle = 2 * wallAngle - angle;
 
 	reflectedAngle = fmod(reflectedAngle, 360.0f);
@@ -112,7 +108,7 @@ public:
 		if (collisionDetected) {	
 			if (getDistance(newX, newY, collidedWall->startX, collidedWall->startY) < threshold || 
 				getDistance(newX, newY, collidedWall->endX, collidedWall->endY) < threshold) {
-				std::cout << "hIT THE TIP" << std::endl;
+				//std::cout << "hIT THE TIP" << std::endl;
 				angle = fmod(angle + 180, 360.0f);
 			}
 			else {
@@ -152,13 +148,13 @@ public:
 
 std::vector<Particle> particles;
 
-void SpawnRandomParticle() {
+static void SpawnRandomParticle() {
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> disX(0, 1280);
 	std::uniform_real_distribution<> disY(0, 720);
 	std::uniform_real_distribution<> disAngle(0, 360);
-	std::uniform_real_distribution<> disVelocity(70, 500);
+	std::uniform_real_distribution<> disVelocity(10, 300);
 
 	float x = disX(gen);
 	float y = disY(gen);
@@ -168,7 +164,7 @@ void SpawnRandomParticle() {
 	particles.emplace_back(x, y, angle, velocity);
 }
 
-void SpawnRandomWall() {
+static void SpawnRandomWall() {
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> disStartX(0, 1280);
@@ -188,7 +184,7 @@ static void GLFWErrorCallback(int error, const char* description) {
 	std::cout << "GLFW Error " <<  description << " code: " << error << std::endl;
 }
 
-void DrawElements() {
+static void DrawElements() {
 	ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 	for (const auto& particle : particles) {
@@ -303,10 +299,8 @@ int main(int argc, char *argv) {
 
 		DrawElements();
 
-		// End the window
 		ImGui::End();
 
-		// Pop the style color to restore the default settings
 		ImGui::PopStyleColor();
 
 		// Create a new window for the button and input fields
@@ -380,8 +374,6 @@ int main(int argc, char *argv) {
 		ImGui::Text("Number of Particles: %d", particles.size());
 
 		// Batch Particle UI elements
-		
-		// Text field for the number of particles
 		ImGui::InputText("Number of Particles", numParticlesStr, sizeof(numParticlesStr));
 		numParticles = atoi(numParticlesStr);
 
@@ -423,7 +415,6 @@ int main(int argc, char *argv) {
 						particles.emplace_back(startX, startY, angle, startVelocity);
 						break;
 					case 2: // Varying Velocity
-						// No additional adjustment needed for velocity
 						particles.emplace_back(startX, startY, startAngle, velocity);
 						break;
 				}
@@ -438,13 +429,10 @@ int main(int argc, char *argv) {
 		ImGui::InputFloat("Wall End X", &wallEndX);
 		ImGui::InputFloat("Wall End Y", &wallEndY);
 
-		// Button to add the wall
 		if (ImGui::Button("Add Wall")) {
-			// Create wall objects and add them to the walls vector
 			walls.emplace_back(wallStartX, wallStartY, wallEndX, wallEndY);
 		}
 
-		// End the button window
 		ImGui::End();
 
 		// Pop the style var to restore the default settings

@@ -93,7 +93,7 @@ void DrawParticles() {
 		ImVec2 pos = ImVec2(particle.x, 720 - particle.y);
 
 		// Draw a filled circle at the particle's position
-		draw_list->AddCircleFilled(pos, 3.0f, IM_COL32(255, 255, 255, 255)); // White color
+		draw_list->AddCircleFilled(pos, 1.5f, IM_COL32(255, 255, 255, 255)); // White color
 
 		//std::cout << "Particle position: (" << particle.x << ", " << particle.y << ")" << std::endl;
 	}

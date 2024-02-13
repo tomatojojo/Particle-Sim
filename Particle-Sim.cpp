@@ -67,52 +67,48 @@ float reflectAngle(Wall wall, float angle) {
 class Particle {
 public:
 	float x, y;
-	float angle; // Angle in degrees
-	float velocity; // Velocity in pixels per second
+	float angle; 
+	float velocity;
 
 	Particle(float x, float y, float angle, float velocity)
 		: x(x), y(y), angle(angle), velocity(velocity) {}
 
 	void UpdatePosition(float deltaTime) {
-		// Convert angle to radians
 		float radians = angle * PI / 180.0;
 
-		// Calculate the change in position
 		float dx = cos(radians) * velocity * deltaTime;
 		float dy = sin(radians) * velocity * deltaTime;
 
-		// Update position
 		float newX = x + dx;
 		float newY = y + dy;
 
-		float threshold = 3.0f; // Adjust this value based on the size of your particles
+		// Threshold for collision detection distance
+		float threshold = 3.0f; 
 
 		// Check if the new position collides with any wall
 		bool collisionDetected = false;
 		Wall* collidedWall = nullptr;
+
 		for (auto& wall : walls) {
 			float lineDistance = pointLineDistance(newX, newY, wall.startX, wall.startY, wall.endX, wall.endY);
 			float wallStartDistance = getDistance(newX, newY, wall.startX, wall.startY);
 			float wallEndDistance = getDistance(newX, newY, wall.endX, wall.endY);
-			
+
 			if (lineDistance < threshold || wallStartDistance < threshold || wallEndDistance < threshold) {
-				// Ensure the particle is actually touching the wall before reflecting
 				float dx = newX - wall.startX;
 				float dy = newY - wall.startY;
 				float wallLength = getDistance(wall.startX, wall.startY, wall.endX, wall.endY);
 				float t = (dx * (wall.endX - wall.startX) + dy * (wall.endY - wall.startY)) / (wallLength * wallLength);
+
 				if (t >= 0 && t <= 1) {
-					// The particle is on the line segment, so it's a valid collision
 					collisionDetected = true;
 					collidedWall = &wall;
 					break;
 				}
-
 			}
-		
 		}
 
-		// If a collision is detected, reflect the particle and update its position
+		// Reflect particle on collision
 		if (collisionDetected) {	
 			if (getDistance(newX, newY, collidedWall->startX, collidedWall->startY) < threshold || 
 				getDistance(newX, newY, collidedWall->endX, collidedWall->endY) < threshold) {
@@ -122,7 +118,7 @@ public:
 			else {
 				angle = reflectAngle(*collidedWall, angle);
 			}
-			// Recalculate the change in position based on the new angle
+			
 			radians = angle * PI / 180.0;
 			dx = cos(radians) * velocity * deltaTime;
 			dy = sin(radians) * velocity * deltaTime;
@@ -130,11 +126,10 @@ public:
 			newY = y + dy;
 		}
 
-		// If no collision with a wall, update the position normally
 		x = newX;
 		y = newY;
 
-		// Reflect off window boundaries if necessary (existing code)
+		// Reflect off window boundaries
 		if (x < 0) {
 			x = 0;
 			angle = 180 - angle;
@@ -152,7 +147,6 @@ public:
 			y = 720;
 			angle = -angle;
 		}
-
 	}
 };
 
@@ -182,7 +176,6 @@ void SpawnRandomWall() {
 	std::uniform_real_distribution<> disEndX(0, 1280);
 	std::uniform_real_distribution<> disEndY(0, 720);
 	
-
 	float startX = disStartX(gen);
 	float startY = disStartY(gen);
 	float endX = disEndX(gen);
@@ -199,11 +192,9 @@ void DrawElements() {
 	ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 	for (const auto& particle : particles) {
-		// Convert particle position to screen coordinates
 		ImVec2 pos = ImVec2(particle.x, 720 - particle.y);
 
-		// Draw a filled circle at the particle's position
-		draw_list->AddCircleFilled(pos, 1.5f, IM_COL32(255, 255, 255, 255)); // White color
+		draw_list->AddCircleFilled(pos, 1.5f, IM_COL32(255, 255, 255, 255)); 
 	}
 
 	for (auto& wall : walls) {

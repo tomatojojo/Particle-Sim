@@ -82,15 +82,50 @@ public:
 		float dy = sin(radians) * velocity * deltaTime;
 
 		// Update position
-		x += dx;
-		y += dy;
+		float newX = x + dx;
+		float newY = y + dy;
 
-		y = 720 - y; // Invert y-axis
+		// Check if the new position collides with any wall
+		bool collisionDetected = false;
+		Wall* collidedWall = nullptr;
+		for (auto& wall : walls) {
+			float distance = pointLineDistance(newX, newY, wall.startX, wall.startY, wall.endX, wall.endY);
+			float threshold = 3.0f; // Adjust this value based on the size of your particles
+			if (distance < threshold) {
+				// Ensure the particle is actually touching the wall before reflecting
+				float dx = newX - wall.startX;
+				float dy = newY - wall.startY;
+				float wallLength = getDistance(wall.startX, wall.startY, wall.endX, wall.endY);
+				float t = (dx * (wall.endX - wall.startX) + dy * (wall.endY - wall.startY)) / (wallLength * wallLength);
+				if (t >= 0 && t <= 1) {
+					// The particle is on the line segment, so it's a valid collision
+					collisionDetected = true;
+					collidedWall = &wall;
+					break;
+				}
 
-		// Bounce off the walls (ADJUST HERE)
+			}
+		}
+
+		// If a collision is detected, reflect the particle and update its position
+		if (collisionDetected) {
+			angle = reflectAngle(*collidedWall, angle);
+			// Recalculate the change in position based on the new angle
+			radians = angle * PI / 180.0;
+			dx = cos(radians) * velocity * deltaTime;
+			dy = sin(radians) * velocity * deltaTime;
+			newX = x + dx;
+			newY = y + dy;
+		}
+
+		// If no collision with a wall, update the position normally
+		x = newX;
+		y = newY;
+
+		// Reflect off window boundaries if necessary (existing code)
 		if (x < 0) {
 			x = 0;
-			angle = 180 - angle; // Reflect angle
+			angle = 180 - angle;
 		}
 		else if (x > 1280) {
 			x = 1280;
@@ -105,20 +140,6 @@ public:
 			y = 720;
 			angle = -angle;
 		}
-		// Check if the particle collides with any wall, and reflect the angle accordingly
-		for (auto& wall : walls) {
-			// Calculate the distance from the particle to the wall
-			float distance = pointLineDistance(x, y, wall.startX, wall.startY, wall.endX, wall.endY);
-
-			// If the distance is less than a threshold, consider the particle to have collided with the wall
-			float threshold = 1.0f; // Adjust this value based on the size of your particles
-			if (distance < threshold) {
-				// Reflect the particle's angle based on the orientation of the wall
-				std::cout << "Collision!" << std::endl;
-				angle = reflectAngle(wall, angle);
-			}
-		}
-		y = 720 - y; // Invert y-axis
 	}
 };
 

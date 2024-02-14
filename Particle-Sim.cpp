@@ -17,6 +17,8 @@ using namespace std;
 
 static GLFWwindow* window = nullptr;
 float PI = 3.14159265359;
+ImVec4 wallColor = ImVec4(1.0f, 1.0f, 0.0f, 1.0f); // Default yellow color for walls
+ImVec4 particleColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default white color for particles
 
 class Wall {
 public:
@@ -29,7 +31,7 @@ public:
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 		ImVec2 start = ImVec2(startX, 720 - startY);
 		ImVec2 end = ImVec2(endX, 720 - endY);
-		draw_list->AddLine(start, end, IM_COL32(255, 255, 0, 255), 1.0f);
+		draw_list->AddLine(start, end, ImColor(wallColor), 1.0f);
 	}
 
 };
@@ -205,7 +207,7 @@ static void DrawElements() {
 	for (const auto& particle : particles) {
 		ImVec2 pos = ImVec2(particle.x, 720 - particle.y);
 
-		draw_list->AddCircleFilled(pos, 1.5f, IM_COL32(255, 255, 255, 255)); 
+		draw_list->AddCircleFilled(pos, 1.5f, ImColor(particleColor));
 	}
 
 	for (auto& wall : walls) {
@@ -316,6 +318,19 @@ int main(int argc, char *argv) {
 
 		ImGui::End();
 
+		// color pickers
+		ImGui::SetNextWindowSize(ImVec2(1280, 100), ImGuiCond_Once);
+		ImGui::SetNextWindowPos(ImVec2(0, 720), ImGuiCond_Once); // below the black panel
+		ImGui::Begin("Color Pickers", nullptr, ImGuiWindowFlags_NoDecoration);
+
+		// Color picker for walls
+		ImGui::ColorEdit3("Wall Color", (float*)&wallColor);
+
+		// Color picker for particles
+		ImGui::ColorEdit3("Particle Color", (float*)&particleColor);
+
+		ImGui::End();
+
 		ImGui::PopStyleColor();
 
 		// Create a new window for the button and input fields
@@ -329,14 +344,14 @@ int main(int argc, char *argv) {
 			SpawnRandomParticle();
 		}
 
-		ImGui::SameLine(); // 
+		ImGui::SameLine(); 
 		if (ImGui::Button("Spawn Random Wall")) {
 			SpawnRandomWall();
 		}
 
-		ImGui::SameLine(); // Place the next item on the same line
+		ImGui::SameLine();
 		if (ImGui::Button("Reset Particles")) {
-			particles.clear(); // Clear the particles vector
+			particles.clear();
 		}
 
 		ImGui::SameLine();
@@ -393,7 +408,6 @@ int main(int argc, char *argv) {
 			}
 		}
 
-		// Display error popup if necessary
 		if (showErrorPopup) {
 			ImGui::OpenPopup("Invalid Input");
 			if (ImGui::BeginPopupModal("Invalid Input", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -446,20 +460,19 @@ int main(int argc, char *argv) {
 
 				// Check if the new position is inside any wall
 				bool insideWall = false;
-				Wall* collidingWall = nullptr; // Variable to store the wall the particle is inside
+				Wall* collidingWall = nullptr;
 
 				for (auto& wall : walls) {
 					if (x >= wall.startX && x <= wall.endX &&
 						y >= wall.startY && y <= wall.endY) {
 						insideWall = true;
-						collidingWall = &wall; // Store the reference to the colliding wall
+						collidingWall = &wall;
 						break;
 					}
 				}
 
 				// If the particle is inside a wall, move it outside the wall
 				if (insideWall) {
-					// Move the particle to the right of the wall if it's closer to the right edge
 					if (x < collidingWall->endX && !(collidingWall->endX >= 1280)) {
 						x = collidingWall->endX + 1.0f; // Add a small offset to ensure it's outside the wall
 					}
@@ -481,8 +494,7 @@ int main(int argc, char *argv) {
 						particles.emplace_back(startX, startY, startAngle, velocity);
 						break;
 				}
-				std::cout << "Particle position: (" << x << ", " << y << ")" << std::endl;
-				
+				//std::cout << "Particle position: (" << x << ", " << y << ")" << std::endl;
 			}
 		}
 

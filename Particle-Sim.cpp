@@ -79,7 +79,7 @@ public:
 		float newY = y + dy;
 
 		// Threshold for collision detection distance
-		float threshold = 3.0f; 
+		float threshold = velocity > 500 ? 10.0f : 3.0f; 
 
 		// Check if the new position collides with any wall
 		bool collisionDetected = false;
@@ -156,8 +156,23 @@ static void SpawnRandomParticle() {
 	std::uniform_real_distribution<> disAngle(0, 360);
 	std::uniform_real_distribution<> disVelocity(10, 300);
 
-	float x = disX(gen);
-	float y = disY(gen);
+	float x, y;
+	bool validPosition = false;
+
+	while (!validPosition) {
+		x = disX(gen);
+		y = disY(gen);
+
+		// Check if the new position is inside any wall
+		validPosition = true;
+		for (const auto& wall : walls) {
+			if (x >= wall.startX && x <= wall.endX && y >= wall.startY && y <= wall.endY) {
+				validPosition = false;
+				break;
+			}
+		}
+	}
+
 	float angle = disAngle(gen);
 	float velocity = disVelocity(gen);
 
@@ -305,7 +320,7 @@ int main(int argc, char *argv) {
 
 		// Create a new window for the button and input fields
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
-		ImGui::SetNextWindowSizeConstraints(ImVec2(640, 720), ImVec2(640, 720)); // Set size constraints
+		ImGui::SetNextWindowSizeConstraints(ImVec2(640, 1080), ImVec2(640, 1080)); // Set size constraints
 		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always); // Positioned to the right of the black panel
 		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
@@ -341,6 +356,30 @@ int main(int argc, char *argv) {
 			float newParticleY = atof(newParticleYStr);
 			float newParticleAngle = atof(newParticleAngleStr);
 			float newParticleVelocity = atof(newParticleVelocityStr);
+
+			// Check if the new position is inside any wall
+			bool insideWall = false;
+			Wall* collidingWall = nullptr; // Variable to store the wall the particle is inside
+
+			for (auto& wall : walls) {
+				if (newParticleX >= wall.startX && newParticleX <= wall.endX &&
+					newParticleY >= wall.startY && newParticleY <= wall.endY) {
+					insideWall = true;
+					collidingWall = &wall; // Store the reference to the colliding wall
+					break;
+				}
+			}
+
+			// If the particle is inside a wall, move it outside the wall
+			if (insideWall) {
+				// Move the particle to the right of the wall if it's closer to the right edge
+				if (newParticleX < collidingWall->endX && !(collidingWall->endX >= 1280)) {
+					newParticleX = collidingWall->endX + 1.0f; // Add a small offset to ensure it's outside the wall
+				}
+				else { // Otherwise, move it to the left of the wall
+					newParticleX = collidingWall->startX - 1.0f; // Subtract a small offset to ensure it's outside the wall
+				}
+			}
 
 			//std::cout << "New particle velocity: " << newParticleVelocity << std::endl; // Debug output
 
@@ -404,6 +443,30 @@ int main(int argc, char *argv) {
 				float y = startY + i * dY;
 				float angle = startAngle + i * dAngle;
 				float velocity = startVelocity + i * dVelocity;
+
+				// Check if the new position is inside any wall
+				bool insideWall = false;
+				Wall* collidingWall = nullptr; // Variable to store the wall the particle is inside
+
+				for (auto& wall : walls) {
+					if (x >= wall.startX && x <= wall.endX &&
+						y >= wall.startY && y <= wall.endY) {
+						insideWall = true;
+						collidingWall = &wall; // Store the reference to the colliding wall
+						break;
+					}
+				}
+
+				// If the particle is inside a wall, move it outside the wall
+				if (insideWall) {
+					// Move the particle to the right of the wall if it's closer to the right edge
+					if (x < collidingWall->endX && !(collidingWall->endX >= 1280)) {
+						x = collidingWall->endX + 1.0f; // Add a small offset to ensure it's outside the wall
+					}
+					else { // Otherwise, move it to the left of the wall
+						x = collidingWall->startX - 1.0f; // Subtract a small offset to ensure it's outside the wall
+					}
+				}
 
 				// Adjust the values based on the selected variation type
 				switch (particleVariationType) {

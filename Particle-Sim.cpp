@@ -437,10 +437,6 @@ int main(int argc, char *argv) {
 				ImGui::EndPopup();
 			}
 		}
-		
-		ImGui::Text("Current FPS: %.f", currentFramerate);
-
-		ImGui::Text("Number of Particles: %d", particles.size());
 
 		// Add vertical spacing
 		ImGui::Dummy(ImVec2(0, 60));
@@ -523,6 +519,11 @@ int main(int argc, char *argv) {
 		if (ImGui::Button("Add Wall")) {
 			walls.emplace_back(wallStartX, wallStartY, wallEndX, wallEndY);
 		}
+
+		ImGui::Dummy(ImVec2(0, 150));
+		ImGui::Text("Current FPS: %.f", currentFramerate);
+		ImGui::Text("Number of Particles: %d", particles.size());
+		ImGui::Text("Number of Walls: %d", walls.size());
 
 		ImGui::End();
 

@@ -357,6 +357,12 @@ int main(int argc, char *argv) {
 		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always);
 		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
+		// Add vertical spacing
+		ImGui::Dummy(ImVec2(0, 25));
+		ImGui::Text("Add Individual Particle");
+		ImGui::Dummy(ImVec2(0, 10));
+		
+
 		if (ImGui::Button("Spawn Random Particle")) {
 			SpawnRandomParticle();
 		}
@@ -436,6 +442,11 @@ int main(int argc, char *argv) {
 
 		ImGui::Text("Number of Particles: %d", particles.size());
 
+		// Add vertical spacing
+		ImGui::Dummy(ImVec2(0, 60));
+		ImGui::Text("Add Batch Particle");
+		ImGui::Dummy(ImVec2(0, 10));
+
 		ImGui::InputText("Number of Particles", numParticlesStr, sizeof(numParticlesStr));
 		numParticles = atoi(numParticlesStr);
 
@@ -498,6 +509,11 @@ int main(int argc, char *argv) {
 				//std::cout << "Particle position: (" << x << ", " << y << ")" << std::endl;
 			}
 		}
+
+		// Add vertical spacing
+		ImGui::Dummy(ImVec2(0, 60));
+		ImGui::Text("Add Individual Particle");
+		ImGui::Dummy(ImVec2(0, 10));
 
 		ImGui::InputFloat("Wall Start X", &wallStartX);
 		ImGui::InputFloat("Wall Start Y", &wallStartY);

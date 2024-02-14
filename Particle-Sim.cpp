@@ -107,7 +107,16 @@ public:
 		}
 
 		// Reflect particle on collision
-		if (collisionDetected) {	
+		if (collisionDetected) {
+			// Add a small random offset to the particle's position after a collision
+			std::random_device rd;
+			std::mt19937 gen(rd());
+			std::uniform_real_distribution<> disOffset(-1.0f, 1.0f);
+			float offsetX = disOffset(gen);
+			float offsetY = disOffset(gen);
+
+			x += offsetX;
+			y += offsetY;
 			if (getDistance(newX, newY, collidedWall->startX, collidedWall->startY) < threshold || 
 				getDistance(newX, newY, collidedWall->endX, collidedWall->endY) < threshold) {
 				//std::cout << "hIT THE TIP" << std::endl;
@@ -193,6 +202,31 @@ static void SpawnRandomWall() {
 	float startY = disStartY(gen);
 	float endX = disEndX(gen);
 	float endY = disEndY(gen);
+
+	// Check if any particles are within the area of the wall
+	for (auto& particle : particles) {
+		if (particle.x >= startX && particle.x <= endX && particle.y >= startY && particle.y <= endY) {
+			// Offset the particle to a safe distance away from the wall
+			float offsetX = (particle.x < (startX + endX) / 2) ? -10.0f : 10.0f;
+			float offsetY = (particle.y < (startY + endY) / 2) ? -10.0f : 10.0f;
+
+			// Make sure the particle is not inside another wall or outside the window bounds
+			bool insideAnotherWall = false;
+			for (const auto& otherWall : walls) {
+				if (particle.x + offsetX >= otherWall.startX && particle.x + offsetX <= otherWall.endX &&
+					particle.y + offsetY >= otherWall.startY && particle.y + offsetY <= otherWall.endY) {
+					insideAnotherWall = true;
+					break;
+				}
+			}
+
+			if (!insideAnotherWall && particle.x + offsetX >= 0 && particle.x + offsetX <= 1280 &&
+				particle.y + offsetY >= 0 && particle.y + offsetY <= 720) {
+				particle.x += offsetX;
+				particle.y += offsetY;
+			}
+		}
+	}
 
 	walls.emplace_back(startX, startY, endX, endY);	
 }

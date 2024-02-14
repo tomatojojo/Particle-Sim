@@ -541,6 +541,8 @@ int main(int argc, char *argv) {
 				futures.push_back(std::async(std::launch::async, UpdateParticlesRange, startIter, endIter, timeStep));
 			}
 
+			futures.push_back(std::async(std::launch::async, DrawElements));
+
 			for (auto& future : futures) {
 				future.wait();
 			}

@@ -512,7 +512,7 @@ int main(int argc, char *argv) {
 
 		// Add vertical spacing
 		ImGui::Dummy(ImVec2(0, 60));
-		ImGui::Text("Add Individual Particle");
+		ImGui::Text("Add Walls");
 		ImGui::Dummy(ImVec2(0, 10));
 
 		ImGui::InputFloat("Wall Start X", &wallStartX);

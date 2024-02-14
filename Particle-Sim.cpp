@@ -18,8 +18,8 @@ using namespace std;
 
 static GLFWwindow* window = nullptr;
 float PI = 3.14159265359;
-ImVec4 wallColor = ImVec4(1.0f, 1.0f, 0.0f, 1.0f); // Default yellow color for walls
-ImVec4 particleColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Default white color for particles
+ImVec4 wallColor = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+ImVec4 particleColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 class Wall {
 public:
@@ -43,7 +43,6 @@ static float getDistance(float x1, float y1, float x2, float y2) {
 	return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
-// Function to calculate the distance from a point to a line segment
 static float pointLineDistance(float px, float py, float x1, float y1, float x2, float y2) {
 	float dx = x2 - x1;
 	float dy = y2 - y1;
@@ -81,10 +80,9 @@ public:
 		float newX = x + dx;
 		float newY = y + dy;
 
-		// Threshold for collision detection distance
-		float threshold = velocity > 500 ? 10.0f : 3.0f; 
+		// Threshold for collision detection
+		float threshold = velocity > 500 ? 10.0f : 3.0f;
 
-		// Check if the new position collides with any wall
 		bool collisionDetected = false;
 		Wall* collidedWall = nullptr;
 
@@ -107,9 +105,7 @@ public:
 			}
 		}
 
-		// Reflect particle on collision
 		if (collisionDetected) {
-			// Add a small random offset to the particle's position after a collision
 			std::random_device rd;
 			std::mt19937 gen(rd());
 			std::uniform_real_distribution<> disOffset(-0.3f, 0.3f);
@@ -137,7 +133,6 @@ public:
 		x = newX;
 		y = newY;
 
-		// Reflect off window boundaries
 		if (x < 0) {
 			x = 0;
 			angle = 180 - angle;
@@ -175,7 +170,6 @@ static void SpawnRandomParticle() {
 		x = disX(gen);
 		y = disY(gen);
 
-		// Check if the new position is inside any wall
 		validPosition = true;
 		for (const auto& wall : walls) {
 			if (x >= wall.startX && x <= wall.endX && y >= wall.startY && y <= wall.endY) {
@@ -204,14 +198,11 @@ static void SpawnRandomWall() {
 	float endX = disEndX(gen);
 	float endY = disEndY(gen);
 
-	// Check if any particles are within the area of the wall
 	for (auto& particle : particles) {
 		if (particle.x >= startX && particle.x <= endX && particle.y >= startY && particle.y <= endY) {
-			// Offset the particle to a safe distance away from the wall
 			float offsetX = (particle.x < (startX + endX) / 2) ? -10.0f : 10.0f;
 			float offsetY = (particle.y < (startY + endY) / 2) ? -10.0f : 10.0f;
 
-			// Make sure the particle is not inside another wall or outside the window bounds
 			bool insideAnotherWall = false;
 			for (const auto& otherWall : walls) {
 				if (particle.x + offsetX >= otherWall.startX && particle.x + offsetX <= otherWall.endX &&
@@ -257,7 +248,6 @@ void UpdateParticlesRange(std::vector<Particle>::iterator begin, std::vector<Par
 }
 
 int main(int argc, char *argv) {
-
 	if (!glfwInit()) {
 		std::cout << "Failed to initialize GLFW" << std::endl;
 		std::cin.get();
@@ -272,9 +262,7 @@ int main(int argc, char *argv) {
 		return -1;
 	}
 
-	// Maximize the window
 	glfwMaximizeWindow(window);
-
 	glfwMakeContextCurrent(window);
 
 	ImGui::CreateContext();
@@ -283,7 +271,6 @@ int main(int argc, char *argv) {
 
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	// Placeholders for input values for new individual particles
 	char newParticleXStr[16] = "";
 	char newParticleYStr[16] = "";
 	char newParticleAngleStr[16] = "";
@@ -291,7 +278,6 @@ int main(int argc, char *argv) {
 
 	bool showErrorPopup = false;
 
-	// Batch particle variables
 	char numParticlesStr[16] = "";
 	int numParticles = 0;
 	int particleVariationType = 0; //  0: Varying X and Y,  1: Varying Angle,  2: Varying Velocity
@@ -300,7 +286,6 @@ int main(int argc, char *argv) {
 	float startAngle = 0.0f, endAngle = 0.0f;
 	float startVelocity = 0.0f, endVelocity = 0.0f;
 
-	// Wall variables
 	float wallStartX = 0.0f, wallStartY = 0.0f;
 	float wallEndX = 0.0f, wallEndY = 0.0f;
 
@@ -322,7 +307,6 @@ int main(int argc, char *argv) {
 	double lastUIUpdateTime = 0.0;
 
 	while (!glfwWindowShouldClose(window)) {
-		// Measure the time at the start of the loop
 		double currentTime = glfwGetTime();
 		frameTime = currentTime - lastUpdateTime;
 
@@ -344,43 +328,35 @@ int main(int argc, char *argv) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// Set the window background color to black
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-		// Begin the black panel with no title bar and no resize option
 		ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_Always);
-		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always); // Center the window
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 		ImGui::Begin("Black Panel", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
-		// Get the draw list for the black panel
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 		DrawElements();
 
 		ImGui::End();
 
-		// color pickers
 		ImGui::SetNextWindowSize(ImVec2(1280, 100), ImGuiCond_Once);
-		ImGui::SetNextWindowPos(ImVec2(0, 720), ImGuiCond_Once); // below the black panel
+		ImGui::SetNextWindowPos(ImVec2(0, 720), ImGuiCond_Once);
+
 		ImGui::Begin("Color Pickers", nullptr, ImGuiWindowFlags_NoDecoration);
 
-		// Color picker for walls
 		ImGui::ColorEdit3("Wall Color", (float*)&wallColor);
-
-		// Color picker for particles
 		ImGui::ColorEdit3("Particle Color", (float*)&particleColor);
 
 		ImGui::End();
 
 		ImGui::PopStyleColor();
 
-		// Create a new window for the button and input fields
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
-		ImGui::SetNextWindowSizeConstraints(ImVec2(640, 1080), ImVec2(640, 1080)); // Set size constraints
-		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always); // Positioned to the right of the black panel
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		ImGui::SetNextWindowSizeConstraints(ImVec2(640, 1080), ImVec2(640, 1080));
+		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always);
 		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
-		// Check if the Spawn Particle button was clicked
 		if (ImGui::Button("Spawn Random Particle")) {
 			SpawnRandomParticle();
 		}
@@ -400,40 +376,35 @@ int main(int argc, char *argv) {
 			walls.clear();
 		}
 
-		// Text fields for inputting the new particle's properties
 		ImGui::InputText("X Coordinate", newParticleXStr, sizeof(newParticleXStr));
 		ImGui::InputText("Y Coordinate", newParticleYStr, sizeof(newParticleYStr));
 		ImGui::InputText("Angle (degrees)", newParticleAngleStr, sizeof(newParticleAngleStr));
 		ImGui::InputText("Velocity (pixels/sec)", newParticleVelocityStr, sizeof(newParticleVelocityStr));
 
-		// Button to add the new particle to the canvas
 		if (ImGui::Button("Add Particle")) {
 			float newParticleX = atof(newParticleXStr);
 			float newParticleY = atof(newParticleYStr);
 			float newParticleAngle = atof(newParticleAngleStr);
 			float newParticleVelocity = atof(newParticleVelocityStr);
 
-			// Check if the new position is inside any wall
 			bool insideWall = false;
-			Wall* collidingWall = nullptr; // Variable to store the wall the particle is inside
+			Wall* collidingWall = nullptr;
 
 			for (auto& wall : walls) {
 				if (newParticleX >= wall.startX && newParticleX <= wall.endX &&
 					newParticleY >= wall.startY && newParticleY <= wall.endY) {
 					insideWall = true;
-					collidingWall = &wall; // Store the reference to the colliding wall
+					collidingWall = &wall;
 					break;
 				}
 			}
 
-			// If the particle is inside a wall, move it outside the wall
 			if (insideWall) {
-				// Move the particle to the right of the wall if it's closer to the right edge
 				if (newParticleX < collidingWall->endX && !(collidingWall->endX >= 1280)) {
-					newParticleX = collidingWall->endX + 1.0f; // Add a small offset to ensure it's outside the wall
+					newParticleX = collidingWall->endX + 1.0f;
 				}
-				else { // Otherwise, move it to the left of the wall
-					newParticleX = collidingWall->startX - 1.0f; // Subtract a small offset to ensure it's outside the wall
+				else {
+					newParticleX = collidingWall->startX - 1.0f;
 				}
 			}
 
@@ -445,7 +416,7 @@ int main(int argc, char *argv) {
 				particles.emplace_back(newParticleX, newParticleY, newParticleAngle, newParticleVelocity);
 			}
 			else {
-				showErrorPopup = true; // Show error popup if conditions are not met
+				showErrorPopup = true;
 			}
 		}
 
@@ -461,20 +432,15 @@ int main(int argc, char *argv) {
 			}
 		}
 		
-		// Display the current framerate in the UI
-		ImGui::Text("Current FPS: %.f", currentFramerate); // Render the framerate value
+		ImGui::Text("Current FPS: %.f", currentFramerate);
 
-		// Display the current number of particles
 		ImGui::Text("Number of Particles: %d", particles.size());
 
-		// Batch Particle UI elements
 		ImGui::InputText("Number of Particles", numParticlesStr, sizeof(numParticlesStr));
 		numParticles = atoi(numParticlesStr);
 
-		// Dropdown menu for particle variation type
 		const char* particleVariationTypes[] = { "Varying X and Y", "Varying Angle", "Varying Velocity" };
 		ImGui::Combo("Particle Variation Type", &particleVariationType, particleVariationTypes, IM_ARRAYSIZE(particleVariationTypes));
-		// Rows of text input fields for start and end values
 		ImGui::InputFloat("Start X", &startX);
 		ImGui::InputFloat("Start Y", &startY);
 		ImGui::InputFloat("End X", &endX);
@@ -484,22 +450,18 @@ int main(int argc, char *argv) {
 		ImGui::InputFloat("Start Velocity", &startVelocity);
 		ImGui::InputFloat("End Velocity", &endVelocity);
 
-		// Button to add the batch of particles
 		if (ImGui::Button("Add Batch Particles")) {
-			// Calculate the increments for each property
 			float dX = (endX - startX) / (numParticles - 1);
 			float dY = (endY - startY) / (numParticles - 1);
 			float dAngle = (endAngle - startAngle) / (numParticles - 1);
 			float dVelocity = (endVelocity - startVelocity) / (numParticles - 1);
 
-			// Generate the batch of particles based on the input values
 			for (int i = 0; i < numParticles; ++i) {
 				float x = startX + i * dX;
 				float y = startY + i * dY;
 				float angle = startAngle + i * dAngle;
 				float velocity = startVelocity + i * dVelocity;
 
-				// Check if the new position is inside any wall
 				bool insideWall = false;
 				Wall* collidingWall = nullptr;
 
@@ -512,17 +474,15 @@ int main(int argc, char *argv) {
 					}
 				}
 
-				// If the particle is inside a wall, move it outside the wall
 				if (insideWall) {
 					if (x < collidingWall->endX && !(collidingWall->endX >= 1280)) {
-						x = collidingWall->endX + 1.0f; // Add a small offset to ensure it's outside the wall
+						x = collidingWall->endX + 1.0f;
 					}
-					else { // Otherwise, move it to the left of the wall
-						x = collidingWall->startX - 1.0f; // Subtract a small offset to ensure it's outside the wall
+					else {
+						x = collidingWall->startX - 1.0f;
 					}
 				}
 
-				// Adjust the values based on the selected variation type
 				switch (particleVariationType) {
 					case 0: // Varying X and Y
 						particles.emplace_back(x, y, startAngle, startVelocity);
@@ -539,7 +499,6 @@ int main(int argc, char *argv) {
 			}
 		}
 
-		// Text fields for wall start and end coordinates
 		ImGui::InputFloat("Wall Start X", &wallStartX);
 		ImGui::InputFloat("Wall Start Y", &wallStartY);
 		ImGui::InputFloat("Wall End X", &wallEndX);
@@ -551,15 +510,12 @@ int main(int argc, char *argv) {
 
 		ImGui::End();
 
-		// Pop the style var to restore the default settings
 		ImGui::PopStyleVar();
 
-		// Only update particles if enough time has passed
 		while (accumulator >= timeStep) {
-			// std::cout << "Updating particles..." << std::endl; // Debug output
 			std::vector<std::future<void>> futures;
 			size_t numParticles = particles.size();
-			size_t numThreads = std::thread::hardware_concurrency(); // Number of logical cores
+			size_t numThreads = std::thread::hardware_concurrency();
 			size_t chunkSize = numParticles / numThreads;
 
 			for (size_t i = 0; i < numThreads; ++i) {
@@ -568,7 +524,6 @@ int main(int argc, char *argv) {
 				futures.push_back(std::async(std::launch::async, UpdateParticlesRange, startIter, endIter, timeStep));
 			}
 
-			// Wait for all futures to complete
 			for (auto& future : futures) {
 				future.wait();
 			}
@@ -579,7 +534,6 @@ int main(int argc, char *argv) {
 			lastUpdateTime = currentTime;
 		}
 
-		// Output the current framerate to the console
 		if (currentTime - lastFPSUpdateTime >= updateInterval) {
 			currentFramerate = 1.0 / frameTime;
 			std::cout << "Framerate: " << currentFramerate << " FPS" << std::endl;
@@ -596,6 +550,7 @@ int main(int argc, char *argv) {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
+		glfwPollEvents();
 		glfwSwapInterval(0); // Disable VSync
 	}
 

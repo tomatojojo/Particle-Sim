@@ -7,6 +7,7 @@
 #include <ctime>
 #include <cmath>
 #include <random>
+#include <future>
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -111,18 +112,18 @@ public:
 			// Add a small random offset to the particle's position after a collision
 			std::random_device rd;
 			std::mt19937 gen(rd());
-			std::uniform_real_distribution<> disOffset(-1.0f, 1.0f);
+			std::uniform_real_distribution<> disOffset(-0.3f, 0.3f);
 			float offsetX = disOffset(gen);
 			float offsetY = disOffset(gen);
 
 			x += offsetX;
 			y += offsetY;
+
 			if (getDistance(newX, newY, collidedWall->startX, collidedWall->startY) < threshold || 
 				getDistance(newX, newY, collidedWall->endX, collidedWall->endY) < threshold) {
 				//std::cout << "hIT THE TIP" << std::endl;
 				angle = fmod(angle + 180, 360.0f);
-			}
-			else {
+			} else {
 				angle = reflectAngle(*collidedWall, angle);
 			}
 			
@@ -246,6 +247,12 @@ static void DrawElements() {
 
 	for (auto& wall : walls) {
 		wall.DrawWall();
+	}
+}
+
+void UpdateParticlesRange(std::vector<Particle>::iterator begin, std::vector<Particle>::iterator end, float deltaTime) {
+	for (auto it = begin; it != end; ++it) {
+		it->UpdatePosition(deltaTime);
 	}
 }
 
@@ -550,8 +557,20 @@ int main(int argc, char *argv) {
 		// Only update particles if enough time has passed
 		while (accumulator >= timeStep) {
 			// std::cout << "Updating particles..." << std::endl; // Debug output
-			for (auto& particle : particles) {
-				particle.UpdatePosition(timeStep);
+			std::vector<std::future<void>> futures;
+			size_t numParticles = particles.size();
+			size_t numThreads = std::thread::hardware_concurrency(); // Number of logical cores
+			size_t chunkSize = numParticles / numThreads;
+
+			for (size_t i = 0; i < numThreads; ++i) {
+				auto startIter = particles.begin() + i * chunkSize;
+				auto endIter = (i == numThreads - 1) ? particles.end() : startIter + chunkSize;
+				futures.push_back(std::async(std::launch::async, UpdateParticlesRange, startIter, endIter, timeStep));
+			}
+
+			// Wait for all futures to complete
+			for (auto& future : futures) {
+				future.wait();
 			}
 			accumulator -= timeStep;
 		}

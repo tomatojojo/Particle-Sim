@@ -271,10 +271,10 @@ int main(int argc, char *argv) {
 
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	char newParticleXStr[16] = "";
-	char newParticleYStr[16] = "";
-	char newParticleAngleStr[16] = "";
-	char newParticleVelocityStr[16] = "";
+	float newParticleX = 0.0f;
+	float newParticleY = 0.0f;
+	float newParticleAngle = 0.0f;
+	float newParticleVelocity = 0.0f;
 
 	bool showErrorPopup = false;
 
@@ -340,13 +340,56 @@ int main(int argc, char *argv) {
 
 		ImGui::End();
 
-		ImGui::SetNextWindowSize(ImVec2(1280, 100), ImGuiCond_Once);
+		ImGui::SetNextWindowSize(ImVec2(1280, 300), ImGuiCond_Once);
 		ImGui::SetNextWindowPos(ImVec2(0, 720), ImGuiCond_Once);
 
 		ImGui::Begin("Color Pickers", nullptr, ImGuiWindowFlags_NoDecoration);
 
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(128.0f / 255.0f, 0.0f, 128.0f / 255.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(128.0f / 255.0f, 0.0f, 128.0f / 255.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(85.0f / 255.0f, 0.0f, 85.0f / 255.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(85.0f / 255.0f, 0.0f, 85.0f / 255.0f, 1.0f));
+
 		ImGui::ColorEdit3("Wall Color", (float*)&wallColor);
 		ImGui::ColorEdit3("Particle Color", (float*)&particleColor);
+
+		ImGui::Dummy(ImVec2(0, 20));
+
+		if (ImGui::Button("Reset Particles")) {
+			particles.clear();
+		}
+
+		ImGui::SameLine();
+		if (ImGui::Button("Clear Walls")) {
+			walls.clear();
+		}
+
+		ImGui::Dummy(ImVec2(0, 20));
+		ImGui::Text("Current FPS: %.f", currentFramerate);
+		ImGui::Text("Number of Particles: %d", particles.size());
+		ImGui::Text("Number of Walls: %d", walls.size());
+		
+		ImGui::PopStyleColor(4);
+
+		ImGui::Dummy(ImVec2(0, 15));
+
+		if (ImGui::GetIO().Fonts->Fonts.Size > 0) {
+			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]); // Use the first font
+
+			// Render the title text with increased font size
+			ImGui::Text("Particle Physics Simulator");
+			ImGui::Text("STDISCM - S12");
+			ImGui::Text("Joshua Ejercito and Jacob Villa");
+
+			// Pop the font from the stack to revert back to the default font size
+			ImGui::PopFont();
+		}
+		else {
+			// If no fonts are available, fall back to the default font size
+			ImGui::Text("Particle Physics Simulator");
+			ImGui::Text("STDISCM - S12");
+			ImGui::Text("Joshua Ejercito and Jacob Villa");
+		}
 
 		ImGui::End();
 
@@ -362,18 +405,21 @@ int main(int argc, char *argv) {
 		ImGui::Text("Add Individual Particle");
 		ImGui::Dummy(ImVec2(0, 10));
 
-		ImGui::InputText("X Coordinate", newParticleXStr, sizeof(newParticleXStr));
-		ImGui::InputText("Y Coordinate", newParticleYStr, sizeof(newParticleYStr));
-		ImGui::InputText("Angle (degrees)", newParticleAngleStr, sizeof(newParticleAngleStr));
-		ImGui::InputText("Velocity (pixels/sec)", newParticleVelocityStr, sizeof(newParticleVelocityStr));
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(128.0f / 255.0f, 0.0f, 128.0f / 255.0f, 1.0f)); 
+		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(128.0f / 255.0f, 0.0f, 128.0f / 255.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(85.0f / 255.0f, 0.0f, 85.0f / 255.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(85.0f / 255.0f, 0.0f, 85.0f / 255.0f, 1.0f));
+		ImGui::PushItemWidth(175.0f); // Adjust the width as needed
 
-		ImGui::Dummy(ImVec2(0, 5));
+		ImGui::InputFloat("X Coordinate", &newParticleX);
+		ImGui::InputFloat("Y Coordinate", &newParticleY);
+		ImGui::InputFloat("Angle (degrees)", &newParticleAngle);
+		ImGui::InputFloat("Velocity (pixels/sec)", &newParticleVelocity);
+
+		ImGui::Dummy(ImVec2(0, 10));
 
 		if (ImGui::Button("Add Particle")) {
-			float newParticleX = atof(newParticleXStr);
-			float newParticleY = atof(newParticleYStr);
-			float newParticleAngle = atof(newParticleAngleStr);
-			float newParticleVelocity = atof(newParticleVelocityStr);
+			
 
 			bool insideWall = false;
 			Wall* collidingWall = nullptr;
@@ -425,11 +471,11 @@ int main(int argc, char *argv) {
 			}
 		}
 
-		ImGui::Dummy(ImVec2(0, 10));
-
+		ImGui::Dummy(ImVec2(0, 55));
+		ImGui::Text("--------------------------------------------------------------------------------------------------------------------");
 
 		// Add vertical spacing
-		ImGui::Dummy(ImVec2(0, 60));
+		ImGui::Dummy(ImVec2(0, 55));
 		ImGui::Text("Add Batch Particle");
 		ImGui::Dummy(ImVec2(0, 10));
 
@@ -446,6 +492,8 @@ int main(int argc, char *argv) {
 		ImGui::InputFloat("End Angle", &endAngle);
 		ImGui::InputFloat("Start Velocity", &startVelocity);
 		ImGui::InputFloat("End Velocity", &endVelocity);
+
+		ImGui::Dummy(ImVec2(0, 10));
 
 		if (ImGui::Button("Add Batch Particles")) {
 			float dX = (endX - startX) / (numParticles - 1);
@@ -497,7 +545,10 @@ int main(int argc, char *argv) {
 		}
 
 		// Add vertical spacing
-		ImGui::Dummy(ImVec2(0, 60));
+		ImGui::Dummy(ImVec2(0, 55));
+		ImGui::Text("--------------------------------------------------------------------------------------------------------------------");
+		ImGui::Dummy(ImVec2(0, 55));
+
 		ImGui::Text("Add Walls");
 		ImGui::Dummy(ImVec2(0, 10));
 
@@ -505,6 +556,10 @@ int main(int argc, char *argv) {
 		ImGui::InputFloat("Wall Start Y", &wallStartY);
 		ImGui::InputFloat("Wall End X", &wallEndX);
 		ImGui::InputFloat("Wall End Y", &wallEndY);
+
+		ImGui::Dummy(ImVec2(0, 10));
+
+		ImGui::PopItemWidth();
 
 		if (ImGui::Button("Add Wall")) {
 			walls.emplace_back(wallStartX, wallStartY, wallEndX, wallEndY);
@@ -514,22 +569,7 @@ int main(int argc, char *argv) {
 		if (ImGui::Button("Spawn Random Wall")) {
 			SpawnRandomWall();
 		}
-
-		ImGui::Dummy(ImVec2(0, 110));
-		
-		if (ImGui::Button("Reset Particles")) {
-			particles.clear();
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Button("Clear Walls")) {
-			walls.clear();
-		}
-
-		ImGui::Dummy(ImVec2(0, 20));
-		ImGui::Text("Current FPS: %.f", currentFramerate);
-		ImGui::Text("Number of Particles: %d", particles.size());
-		ImGui::Text("Number of Walls: %d", walls.size());
+		ImGui::PopStyleColor(4);
 
 		ImGui::End();
 

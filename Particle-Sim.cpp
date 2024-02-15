@@ -361,31 +361,13 @@ int main(int argc, char *argv) {
 		ImGui::Dummy(ImVec2(0, 25));
 		ImGui::Text("Add Individual Particle");
 		ImGui::Dummy(ImVec2(0, 10));
-		
-
-		if (ImGui::Button("Spawn Random Particle")) {
-			SpawnRandomParticle();
-		}
-
-		ImGui::SameLine(); 
-		if (ImGui::Button("Spawn Random Wall")) {
-			SpawnRandomWall();
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Button("Reset Particles")) {
-			particles.clear();
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Button("Clear Walls")) {
-			walls.clear();
-		}
 
 		ImGui::InputText("X Coordinate", newParticleXStr, sizeof(newParticleXStr));
 		ImGui::InputText("Y Coordinate", newParticleYStr, sizeof(newParticleYStr));
 		ImGui::InputText("Angle (degrees)", newParticleAngleStr, sizeof(newParticleAngleStr));
 		ImGui::InputText("Velocity (pixels/sec)", newParticleVelocityStr, sizeof(newParticleVelocityStr));
+
+		ImGui::Dummy(ImVec2(0, 5));
 
 		if (ImGui::Button("Add Particle")) {
 			float newParticleX = atof(newParticleXStr);
@@ -426,6 +408,11 @@ int main(int argc, char *argv) {
 			}
 		}
 
+		ImGui::SameLine();
+		if (ImGui::Button("Spawn Random Particle")) {
+			SpawnRandomParticle();
+		}
+
 		if (showErrorPopup) {
 			ImGui::OpenPopup("Invalid Input");
 			if (ImGui::BeginPopupModal("Invalid Input", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -437,6 +424,9 @@ int main(int argc, char *argv) {
 				ImGui::EndPopup();
 			}
 		}
+
+		ImGui::Dummy(ImVec2(0, 10));
+
 
 		// Add vertical spacing
 		ImGui::Dummy(ImVec2(0, 60));
@@ -520,7 +510,23 @@ int main(int argc, char *argv) {
 			walls.emplace_back(wallStartX, wallStartY, wallEndX, wallEndY);
 		}
 
-		ImGui::Dummy(ImVec2(0, 150));
+		ImGui::SameLine();
+		if (ImGui::Button("Spawn Random Wall")) {
+			SpawnRandomWall();
+		}
+
+		ImGui::Dummy(ImVec2(0, 110));
+		
+		if (ImGui::Button("Reset Particles")) {
+			particles.clear();
+		}
+
+		ImGui::SameLine();
+		if (ImGui::Button("Clear Walls")) {
+			walls.clear();
+		}
+
+		ImGui::Dummy(ImVec2(0, 20));
 		ImGui::Text("Current FPS: %.f", currentFramerate);
 		ImGui::Text("Number of Particles: %d", particles.size());
 		ImGui::Text("Number of Walls: %d", walls.size());

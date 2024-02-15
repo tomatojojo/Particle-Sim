@@ -374,18 +374,15 @@ int main(int argc, char *argv) {
 		ImGui::Dummy(ImVec2(0, 15));
 
 		if (ImGui::GetIO().Fonts->Fonts.Size > 0) {
-			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]); // Use the first font
+			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);
 
-			// Render the title text with increased font size
 			ImGui::Text("Particle Physics Simulator");
 			ImGui::Text("STDISCM - S12");
 			ImGui::Text("Joshua Ejercito and Jacob Villa");
 
-			// Pop the font from the stack to revert back to the default font size
 			ImGui::PopFont();
 		}
 		else {
-			// If no fonts are available, fall back to the default font size
 			ImGui::Text("Particle Physics Simulator");
 			ImGui::Text("STDISCM - S12");
 			ImGui::Text("Joshua Ejercito and Jacob Villa");
@@ -400,7 +397,6 @@ int main(int argc, char *argv) {
 		ImGui::SetNextWindowPos(ImVec2(1280, 0), ImGuiCond_Always);
 		ImGui::Begin("Button Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
-		// Add vertical spacing
 		ImGui::Dummy(ImVec2(0, 25));
 		ImGui::Text("Add Individual Particle");
 		ImGui::Dummy(ImVec2(0, 10));
@@ -409,7 +405,7 @@ int main(int argc, char *argv) {
 		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(128.0f / 255.0f, 0.0f, 128.0f / 255.0f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(85.0f / 255.0f, 0.0f, 85.0f / 255.0f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(85.0f / 255.0f, 0.0f, 85.0f / 255.0f, 1.0f));
-		ImGui::PushItemWidth(175.0f); // Adjust the width as needed
+		ImGui::PushItemWidth(175.0f);
 
 		ImGui::InputFloat("X Coordinate", &newParticleX);
 		ImGui::InputFloat("Y Coordinate", &newParticleY);
@@ -474,7 +470,7 @@ int main(int argc, char *argv) {
 		ImGui::Dummy(ImVec2(0, 55));
 		ImGui::Text("--------------------------------------------------------------------------------------------------------------------");
 
-		// Add vertical spacing
+		
 		ImGui::Dummy(ImVec2(0, 55));
 		ImGui::Text("Add Batch Particle");
 		ImGui::Dummy(ImVec2(0, 10));
@@ -544,7 +540,6 @@ int main(int argc, char *argv) {
 			}
 		}
 
-		// Add vertical spacing
 		ImGui::Dummy(ImVec2(0, 55));
 		ImGui::Text("--------------------------------------------------------------------------------------------------------------------");
 		ImGui::Dummy(ImVec2(0, 55));
